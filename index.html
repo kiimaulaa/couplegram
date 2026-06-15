@@ -79,9 +79,8 @@
             }
         }
 
-        // --- PENGHAPUSAN DAN PENYEGARAN DATA TOTAL (CLEAN WIPE ON RE-LOAD) ---
-        // Dengan mengubah penanda key reset, cache lama di local storage otomatis terhapus bersih.
-        const HAS_RESET = 'plengergram_force_wipe_all_data_v100_final';
+        // --- PENGHAPUSAN DAN PENYEGARAN DATA TOTAL (CLEAN WIPE) ---
+        const HAS_RESET = 'plengergram_force_wipe_all_data_v105_realtime';
         if (!localStorage.getItem(HAS_RESET)) {
             localStorage.clear();
             localStorage.setItem(HAS_RESET, 'true');
@@ -144,14 +143,14 @@
                 }
             } catch (err) {
                 console.error("Auth error:", err);
-                useCloud = false; // Turun ke mode offline secara mulus jika gagal
+                useCloud = false; // Turun ke offline jika gagal
             }
         }
 
         function setupDataSync(user) {
             if (!user || !useCloud) return;
 
-            // 1. Sync Akun Pengguna
+            // 1. Sync Akun Pengguna (Tanpa Bot)
             onSnapshot(getPublicDataColRef('accounts'), (snapshot) => {
                 accounts = [];
                 snapshot.forEach(doc => {
@@ -160,8 +159,6 @@
                         accounts.push(data);
                     }
                 });
-                
-                ensureDefaultBots();
                 
                 const loggedInId = localStorage.getItem('pg_logged_in_id');
                 if (loggedInId && accounts.some(acc => acc.id === loggedInId)) {
@@ -183,7 +180,7 @@
                 renderApp();
             }, (err) => console.error("Error syncing memories:", err));
 
-            // 3. Sync Chat Obrolan
+            // 3. Sync Chat Obrolan Bersama
             onSnapshot(getPublicDataColRef('chats'), (snapshot) => {
                 chats = {};
                 snapshot.forEach(doc => {
@@ -194,30 +191,6 @@
                 });
                 renderApp();
             }, (err) => console.error("Error syncing chats:", err));
-        }
-
-        async function ensureDefaultBots() {
-            const botId = 'bot_asisten_detektif';
-            if (!accounts.some(acc => acc.id === botId)) {
-                const defaultBot = {
-                    id: botId,
-                    username: 'asisten_detektif',
-                    fullName: 'Sherlock AI',
-                    password: '123',
-                    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=detektif',
-                    bio: 'Bot simulasi analisis logis & pencari kebenaran dalam kenangan.',
-                    isBot: true,
-                    personality: 'detektif',
-                    autoReply: 'Saya mendeteksi sebuah petunjuk berharga dari pesan Anda!',
-                    followingIds: []
-                };
-                if (useCloud) {
-                    await setDoc(getPublicDataDocRef('accounts', botId), defaultBot);
-                } else {
-                    accounts.push(defaultBot);
-                    saveLocalData();
-                }
-            }
         }
 
         function getCurrentUser() {
@@ -947,7 +920,7 @@
             const currentUser = getCurrentUser();
             if (!currentUser) return "";
             
-            // Filter Teman & Bot berdasarkan input pencarian baru
+            // Filter Teman berdasarkan input pencarian (Bot telah dihapus total)
             const humanFriends = accounts.filter(a => 
                 a.id !== currentUser.id && 
                 !a.isBot && 
@@ -955,18 +928,9 @@
                  a.fullName.toLowerCase().includes(userSearchQuery.toLowerCase()))
             );
             
-            const botFriends = accounts.filter(a => 
-                a.id !== currentUser.id && 
-                a.isBot && 
-                (a.username.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
-                 a.fullName.toLowerCase().includes(userSearchQuery.toLowerCase()))
-            );
-            
             if (!currentChatWithId) {
                 if (humanFriends.length > 0) {
                     currentChatWithId = humanFriends[0].id;
-                } else if (botFriends.length > 0) {
-                    currentChatWithId = botFriends[0].id;
                 }
             }
 
@@ -981,7 +945,7 @@
                     <div class="w-full md:w-80 border-r border-igBorder flex flex-col bg-black h-full ${currentChatWithId && window.innerWidth < 768 ? 'hidden' : 'block'}">
                         <div class="p-5 border-b border-igBorder flex flex-col gap-3 bg-igGray/20">
                             <span class="font-bold text-base flex items-center gap-2">
-                                <i class="fa-regular fa-paper-plane text-igBlue"></i> Ruang Pesan
+                                <i class="fa-regular fa-paper-plane text-igBlue"></i> Ruang Pesan Teman
                             </span>
                             
                             <!-- FITUR PENCARIAN TEMAN -->
@@ -994,17 +958,17 @@
                         </div>
 
                         <div class="flex-1 overflow-y-auto no-scrollbar p-2 flex flex-col gap-3">
-                            ${humanFriends.length === 0 && botFriends.length === 0 ? `
+                            ${humanFriends.length === 0 ? `
                                 <div class="text-center py-10 px-4 text-gray-500 text-xs">
                                     <i class="fa-regular fa-comments text-3xl mb-2 text-gray-600 block"></i>
-                                    Tidak ada pengguna atau bot cocok yang ditemukan.
+                                    Tidak ada pengguna terdaftar lain saat ini.
                                 </div>
                             ` : ''}
 
                             <!-- Section Teman -->
                             ${humanFriends.length > 0 ? `
                                 <div>
-                                    <p class="text-[10px] text-gray-500 font-bold px-3 py-1.5 uppercase tracking-wider">Teman Anda</p>
+                                    <p class="text-[10px] text-gray-500 font-bold px-3 py-1.5 uppercase tracking-wider">Teman Terdaftar</p>
                                     ${humanFriends.map(friend => {
                                         const roomKey = getChatRoomId(currentUser.id, friend.id);
                                         const friendChats = chats[roomKey] || [];
@@ -1025,35 +989,6 @@
                                                     </div>
                                                     <p class="text-[10px] text-gray-400 truncate">${lastChat.text}</p>
                                                     ${isWeFollowing ? '<span class="text-[8px] text-igBlue font-semibold bg-igBlue/10 px-1 py-0.2 rounded mt-1 inline-block">Diikuti</span>' : ''}
-                                                </div>
-                                            </div>
-                                        `;
-                                    }).join('')}
-                                </div>
-                            ` : ''}
-
-                            <!-- Section Bot -->
-                            ${botFriends.length > 0 ? `
-                                <div>
-                                    <p class="text-[10px] text-gray-500 font-bold px-3 py-1.5 uppercase tracking-wider">Asisten Bot AI</p>
-                                    ${botFriends.map(bot => {
-                                        const roomKey = getChatRoomId(currentUser.id, bot.id);
-                                        const botChats = chats[roomKey] || [];
-                                        const lastChat = botChats[botChats.length - 1] || { text: "Mulai obrolan...", time: "" };
-                                        const isCurrent = bot.id === currentChatWithId;
-
-                                        return `
-                                            <div onclick="selectChat('${bot.id}')" class="flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition ${isCurrent ? 'bg-igHover' : 'hover:bg-igHover'}">
-                                                <div class="relative flex-shrink-0">
-                                                    <img src="${bot.avatar}" class="w-10 h-10 rounded-full bg-igGray p-0.5 border border-igBorder">
-                                                    <span class="absolute bottom-0 right-0 bg-purple-500 w-2.5 h-2.5 rounded-full border-2 border-black"></span>
-                                                </div>
-                                                <div class="flex-1 min-w-0">
-                                                    <div class="flex justify-between items-baseline">
-                                                        <h4 class="font-bold text-xs text-white truncate">@${bot.username}</h4>
-                                                        <span class="text-[9px] text-gray-500">${lastChat.time}</span>
-                                                    </div>
-                                                    <p class="text-[10px] text-gray-400 truncate">${lastChat.text}</p>
                                                 </div>
                                             </div>
                                         `;
@@ -1110,15 +1045,6 @@
                                         Kirim pesan pertama untuk memulai obrolan dengan @${activeFriend.username}.
                                     </div>
                                 `}
-                                
-                                <div id="typing-indicator" class="hidden flex justify-start">
-                                    <div class="bg-igBorder text-gray-400 p-2.5 rounded-2xl rounded-bl-none text-[10px] flex items-center gap-1.5">
-                                        <span>Mengetik...</span>
-                                        <span class="flex gap-0.5">
-                                            <span class="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></span>
-                                        </span>
-                                    </div>
-                                </div>
                             </div>
 
                             <div class="p-4 border-t border-igBorder bg-black">
@@ -1131,7 +1057,7 @@
                             <div class="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-500">
                                 <i class="fa-regular fa-paper-plane text-5xl mb-3 text-gray-700"></i>
                                 <h3 class="font-bold text-sm text-white mb-1">Mulai Obrolan</h3>
-                                <p class="text-xs max-w-xs">Pilih teman dari daftar sebelah kiri atau cari teman terdaftar untuk berkirim pesan.</p>
+                                <p class="text-xs max-w-xs">Pilih teman dari daftar sebelah kiri atau cari teman terdaftar untuk berkirim pesan secara real-time.</p>
                             </div>
                         `}
                     </div>
@@ -1189,32 +1115,6 @@
                     renderApp();
                 }
                 scrollToBottom();
-
-                const activeFriend = accounts.find(a => a.id === currentChatWithId);
-                const typingIndicator = document.getElementById('typing-indicator');
-                if (typingIndicator) typingIndicator.classList.remove('hidden');
-
-                if (activeFriend && activeFriend.isBot) {
-                    setTimeout(async () => {
-                        let replyText = `Momen di ${m.title} itu kelihatan luar biasa banget! Terima kasih banyak sudah berbagi keplengeran bersamaku!`;
-                        const finalHistory = [...updatedHistory, {
-                            sender: activeFriend.id,
-                            text: replyText,
-                            time: timeStr
-                        }];
-                        if (useCloud) {
-                            await setDoc(getPublicDataDocRef('chats', activeRoomId), { messages: finalHistory });
-                        } else {
-                            chats[activeRoomId] = finalHistory;
-                            saveLocalData();
-                            renderApp();
-                        }
-                        if (typingIndicator) typingIndicator.classList.add('hidden');
-                        scrollToBottom();
-                    }, 1200);
-                } else {
-                    if (typingIndicator) typingIndicator.classList.add('hidden');
-                }
             } catch (err) {
                 console.error(err);
             }
@@ -1251,55 +1151,9 @@
                     renderApp();
                 }
                 scrollToBottom();
-
-                const activeFriend = accounts.find(a => a.id === currentChatWithId);
-                const typingIndicator = document.getElementById('typing-indicator');
-
-                if (activeFriend && activeFriend.isBot) {
-                    if (typingIndicator) typingIndicator.classList.remove('hidden');
-                    setTimeout(async () => {
-                        let reply = await getAutoResponse(currentChatWithId, text);
-                        const finalHistory = [...updatedHistory, {
-                            sender: activeFriend.id,
-                            text: reply,
-                            time: timeStr
-                        }];
-                        if (useCloud) {
-                            await setDoc(getPublicDataDocRef('chats', activeRoomId), { messages: finalHistory });
-                        } else {
-                            chats[activeRoomId] = finalHistory;
-                            saveLocalData();
-                            renderApp();
-                        }
-                        if (typingIndicator) typingIndicator.classList.add('hidden');
-                        scrollToBottom();
-                    }, 1200);
-                }
             } catch (err) {
                 console.error(err);
             }
-        }
-
-        async function getAutoResponse(botId, userMessage) {
-            const bot = accounts.find(a => a.id === botId);
-            if (!bot) return "Halo!";
-
-            const msgLower = userMessage.toLowerCase();
-            if (bot.personality === "detektif") {
-                if (msgLower.includes("halo") || msgLower.includes("hi")) {
-                    return "Halo rekan penyelidik. Ada misteri menarik apa yang kita miliki hari ini?";
-                }
-                return `Dari struktur pesan Anda, analisis logika saya menyimpulkan hal yang sangat positif. Menarik sekali!`;
-            }
-
-            if (bot.personality === "motivator") {
-                if (msgLower.includes("halo") || msgLower.includes("hi")) {
-                    return "Salam super luar biasa sahabat terbaikku!";
-                }
-                return "Terus melangkah dengan keteguhan hati. Kemenangan besar sudah menanti Anda!";
-            }
-
-            return bot.autoReply || "Halo! Senang bisa mengobrol.";
         }
 
 
@@ -1340,7 +1194,7 @@
                         <div class="bg-igGray border border-igBorder rounded-2xl p-6 flex flex-col items-center text-center shadow-lg">
                             <div class="relative mb-4">
                                 <img src="${userToShow.avatar}" class="w-28 h-28 rounded-full bg-black border-4 border-igBorder p-1.5">
-                                <span class="absolute bottom-1 right-2 ${userToShow.isBot ? 'bg-purple-500' : 'bg-green-500'} w-5 h-5 rounded-full border-4 border-igGray"></span>
+                                <span class="absolute bottom-1 right-2 bg-green-500 w-5 h-5 rounded-full border-4 border-igGray"></span>
                             </div>
 
                             <h3 class="font-bold text-lg text-white">${userToShow.fullName}</h3>
@@ -1371,11 +1225,8 @@
                             <!-- Tombol Tindakan -->
                             <div class="flex gap-2 w-full">
                                 ${isOwnProfile ? `
-                                    <button onclick="showEditBioModal()" class="flex-1 bg-black hover:bg-igHover border border-igBorder text-xs font-semibold py-2.5 rounded-lg transition text-white">
-                                        <i class="fa-regular fa-pen-to-square mr-1"></i> Edit Profil
-                                    </button>
-                                    <button onclick="showAddBotModal()" class="flex-1 bg-igBlue hover:bg-blue-600 text-xs font-semibold py-2.5 rounded-lg transition text-white">
-                                        <i class="fa-solid fa-robot mr-1"></i> Buat Bot AI
+                                    <button onclick="showEditBioModal()" class="w-full bg-black hover:bg-igHover border border-igBorder text-xs font-semibold py-2.5 rounded-lg transition text-white">
+                                        <i class="fa-regular fa-pen-to-square mr-1"></i> Edit Profil & Bio Anda
                                     </button>
                                 ` : `
                                     <button onclick="toggleFollowUser('${userToShow.id}')" class="flex-1 ${isFollowingTarget(currentUser.id, userToShow.id) ? 'bg-igBorder hover:bg-igHover text-white' : 'bg-igBlue hover:bg-blue-600 text-white'} text-xs font-semibold py-2.5 rounded-lg transition">
@@ -1525,85 +1376,6 @@
             }
         }
 
-        window.showAddBotModal = function() {
-            showCustomModal("Daftarkan Akun Bot Auto-Reply Baru", `
-                <div class="flex flex-col gap-3">
-                    <div>
-                        <label class="block text-[11px] text-gray-400 mb-1">Nama Pengguna (@username)</label>
-                        <input id="new-bot-username" type="text" placeholder="cth: asisten_bot" class="w-full bg-black border border-igBorder rounded px-3 py-2 text-xs text-white outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] text-gray-400 mb-1">Nama Lengkap Bot</label>
-                        <input id="new-bot-fullname" type="text" placeholder="cth: Kakak AI Asisten" class="w-full bg-black border border-igBorder rounded px-3 py-2 text-xs text-white outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] text-gray-400 mb-1">Gaya Kepribadian Bot</label>
-                        <select id="new-bot-personality" class="w-full bg-black border border-igBorder rounded px-3 py-2 text-xs text-white outline-none">
-                            <option value="detektif">Misterius & Analitis (Detektif)</option>
-                            <option value="motivator">Pemberi Energi Positif (Motivator)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] text-gray-400 mb-1">Pesan Balasan Otomatis Utama</label>
-                        <input id="new-bot-autoreply" type="text" placeholder="cth: Senang sekali melihat hari Anda ceria!" class="w-full bg-black border border-igBorder rounded px-3 py-2 text-xs text-white outline-none">
-                    </div>
-                    <button onclick="createNewBotAccount()" class="w-full bg-igBlue hover:bg-blue-600 text-white font-bold py-2 rounded text-xs transition mt-2">Buat Akun Bot</button>
-                </div>
-            `);
-        }
-
-        window.createNewBotAccount = async function() {
-            const username = document.getElementById('new-bot-username').value.trim().toLowerCase();
-            const fullName = document.getElementById('new-bot-fullname').value;
-            const personality = document.getElementById('new-bot-personality').value;
-            const autoReply = document.getElementById('new-bot-autoreply').value;
-
-            if (!username || !fullName || !autoReply) {
-                showCustomToast("Harap isi semua kolom pendaftaran bot!");
-                return;
-            }
-
-            const botId = `user_bot_${Date.now()}`;
-            const newBot = {
-                id: botId,
-                username: username,
-                fullName: fullName,
-                password: "123",
-                avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`,
-                bio: `Bot Simulasi otomatis dengan kepribadian ${personality}.`,
-                followers: 0,
-                following: 0,
-                personality: personality,
-                autoReply: autoReply,
-                isBot: true,
-                followingIds: []
-            };
-
-            try {
-                if (useCloud) {
-                    await setDoc(getPublicDataDocRef('accounts', botId), newBot);
-                    await setDoc(getPublicDataDocRef('chats', botId), {
-                        messages: [
-                            { sender: botId, text: `Halo! Saya siap mengobrol. ${autoReply}`, time: "Baru saja" }
-                        ]
-                    });
-                } else {
-                    accounts.push(newBot);
-                    chats[botId] = [
-                        { sender: botId, text: `Halo! Saya siap mengobrol. ${autoReply}`, time: "Baru saja" }
-                    ];
-                    saveLocalData();
-                }
-
-                closeCustomModal();
-                showCustomToast(`Bot @${username} berhasil diaktifkan.`);
-                renderApp();
-            } catch (err) {
-                console.error(err);
-                showCustomToast("Gagal mengaktifkan bot.");
-            }
-        }
-
         window.viewUserProfil = function(userId) {
             navigateTo('profile');
             const appDiv = document.getElementById('app');
@@ -1736,8 +1508,6 @@
                 memories = JSON.parse(localStorage.getItem('pg_memories')) || [];
                 chats = JSON.parse(localStorage.getItem('pg_chats')) || {};
                 
-                ensureDefaultBots();
-                
                 const loggedInId = localStorage.getItem('pg_logged_in_id');
                 if (loggedInId && accounts.some(acc => acc.id === loggedInId)) {
                     currentUserId = loggedInId;
@@ -1749,7 +1519,7 @@
             renderApp();
             
             if (useCloud) {
-                // Jalankan autentikasi Firebase terlebih dahulu jika Cloud aktif
+                // Jalankan autentikasi Firebase terlebih dahulu jika Cloud aktif (Rule 3)
                 await authenticateUser();
                 
                 onAuthStateChanged(auth, (user) => {
