@@ -9,10 +9,13 @@
     <!-- Google Fonts: Playfair Display untuk judul, Plus Jakarta Sans untuk teks membaca -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600&family=Playfair+Display:ital,wght=0,400;0,600;1,400&family=Caveat:wght=400;700&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #f7f3ed; /* Krem hangat sesuai gambar */
@@ -41,10 +44,10 @@
         }
         /* Efek transisi halus */
         .fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
+            animation: fadeIn 0.4s ease-out forwards;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
         /* Animasi getar untuk input password salah */
@@ -56,11 +59,19 @@
             20%, 60% { transform: translateX(-6px); }
             40%, 80% { transform: translateX(6px); }
         }
+        /* Smooth Scroll Container */
+        .smooth-scroll-container {
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-[#e79e8c] selection:text-white pb-24">
+<body class="min-h-screen flex flex-col overflow-x-hidden selection:bg-[#e79e8c] selection:text-white pb-32">
 
-    <!-- ================= PASWORD GATE / LANDING ================= -->
+    <!-- Audio Element untuk memutar musik -->
+    <audio id="global-audio" loop></audio>
+
+    <!-- ================= PASSWORD GATE / LANDING ================= -->
     <div id="password-gate" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f7f3ed] px-6">
         <div id="password-card" class="max-w-md w-full bg-[#fcfaf7] border border-[#eaddd0] rounded-3xl p-8 shadow-sm text-center space-y-8 fade-in">
             <!-- Dekorasi Notebook Ring di bagian atas gate -->
@@ -76,13 +87,13 @@
             </div>
 
             <div class="space-y-4">
-                <input type="password" id="password-input" placeholder="Hint: 092008" 
+                <input type="password" id="password-input" placeholder="******" 
                     class="w-full px-5 py-3 rounded-xl border border-[#e3d5c8] bg-[#fbf9f6] text-center tracking-widest focus:ring-2 focus:ring-[#e79e8c] focus:outline-none transition-all placeholder:tracking-normal placeholder:text-gray-300 text-lg">
                 <button onclick="checkPassword()" 
                     class="w-full bg-[#e79e8c] text-white py-3 rounded-xl font-medium tracking-wide shadow-sm hover:bg-[#db8d7b] transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
                     Buka Jurnal Kita <i data-lucide="heart" class="w-4 h-4 fill-current"></i>
                 </button>
-                <p id="password-error" class="text-xs text-red-400 font-light hidden">Kode salah sayang, coba diingat-ingat lagi.. 🥺</p>
+                <p id="password-error" class="text-xs text-red-400 font-light hidden">Pin-nya salah boloo 🥺</p>
             </div>
 
             <div class="text-xs text-gray-400 pt-4 border-t border-[#f3eae1] font-light">
@@ -144,27 +155,21 @@
 
                         <!-- Main Photo Box -->
                         <div class="relative group rounded-2xl overflow-hidden border-4 border-white shadow-md rotate-[-1deg] transition-transform hover:rotate-0 duration-300 bg-white">
-                            <!-- Ganti src ini dengan path foto kalian berdua nanti -->
-                            <div class="aspect-[16/9] w-full bg-[#f5ebe0] flex flex-col items-center justify-center text-center p-6 relative">
-                                <!-- Ilustrasi SVG Lucu -->
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-[#dbbc9d] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                                <p class="text-sm font-serif-aesthetic italic text-[#8e766e]">"Tempat ternyaman untuk pulang di setiap harinya."</p>
-                                <span class="absolute bottom-2 right-3 text-[10px] text-gray-400 font-mono">[Foto Utama Kita Di Sini]</span>
+                            <!-- FOTO UTAMA BERANDA -->
+                            <div class="aspect-[16/9] w-full bg-[#f5ebe0] flex flex-col items-center justify-center text-center relative overflow-hidden">
+                                <img id="main-photo" src="https://lh3.googleusercontent.com/d/1jrcTIlvUwQPy0c1CcQQ3h8Zb_aH5BmJ9" alt="Foto Utama"
+                                    onerror="this.style.display='none'; document.getElementById('main-photo-fallback').style.display='flex';" 
+                                    class="w-full h-full object-cover">
                             </div>
                         </div>
 
                         <!-- Cute Note Text -->
                         <div class="space-y-4 text-sm sm:text-base leading-relaxed text-[#5c4a47] font-light">
                             <p class="indent-6">
-                                Haii kamu! <strong class="text-[#bd7a6b] font-semibold">SELAMAT HARI INI YA!</strong> Makasih banyak udah selalu jadi satu-satunya cewek/cowok yang bikin aku selalu ngerasa dihargain, dingertiin, dicintain, dan disayangin yang ampe sesayang itu.. 🧸❤️
-                            </p>
-                            <p class="indent-6">
-                                Aku cuma pengen bilang trimakasih banyak-banyak karna kamu udah hadir dalam hidupku and bikin sweet seventeenku hingga sedewasa ini jadi seindah itu. Makasih udah jadi 'tempat' yang bisa nenangin aku, jadi tempat ternyaman aku yang selalu ngertiin aku, makasih udah selalu sabar ama sikap nggajelas aku and dengerin semua ceritaku yang aneh-aneh itu, and always support aku buat semua ini..
+                                "Seperti 3726 mdpl, selalu butuh waktu yang lama untuk mendapatkan sesuatu yang indah." — 3726 MDPL
                             </p>
                             <p class="indent-6 font-handwritten text-2xl text-[#bd7a6b] pt-2">
-                                Apalagi yang udah ngertiin aku tentang segala hal.. I Love You Forever! 🤍✨
+                                Love You! 🤍
                             </p>
                         </div>
 
@@ -186,8 +191,25 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Lagu 1 -->
-                    <div onclick="openMusicPopup('Semua Aku Dirayakan', '12 September 2024', 'Lagu ini selalu ngingetin aku saat pertama kali kita mutusin buat jalanin ini bareng-bareng. Kamu merayakan semua kurangku, dan aku mencintaimu tanpa syarat.', 'romantic_sunset')" 
+                    <!-- LAGU 1 -->
+                    <div onclick="openMusicPopup('About You', '12 September 2024', 'Lagu ini selalu ngingetin aku saat pertama kali kita mutusin buat jalanin ini bareng-bareng. Kamu merayakan semua kurangku, dan aku mencintaimu tanpa syarat.', 'romantic_sunset', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/About%20You%20-%20The%201975%20%5BiqGAW57EudQ%5D.mp3', 'https://lh3.googleusercontent.com/d/1Bn87ReZ-EbiDrnu3UxE7wDAhsW3pjriE')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">About You</h3>
+                                <p class="text-xs text-gray-400">The 1975</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 2 -->
+                    <div onclick="openMusicPopup('Semua Aku Dirayakan', '19 September 2024', 'Ketika dunia sedang ramai dan melelahkan, bersamamu selalu menjadi tempat paling tenang untuk memulihkan diri.', 'cozy_night', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Nadin%20Amizah%20-%20Semua%20Aku%20Dirayakan%20(Official%20Music%20Video)%20%5BCptnLrdF3_E%5D%20(1).mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_2')"
                         class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
@@ -203,16 +225,16 @@
                         </span>
                     </div>
 
-                    <!-- Lagu 2 -->
-                    <div onclick="openMusicPopup('Untungnya, Hidup Harus Tetap Berjalan', '24 Oktober 2024', 'Di hari yang paling berat pun, saat aku dengar lagu ini bareng kamu, semuanya mendadak terasa lebih ringan. Makasih udah selalu jadi support system terbaikku.', 'cozy_night')" 
+                    <!-- LAGU 3 -->
+                    <div onclick="openMusicPopup('Tujuh Belas', '05 Oktober 2024', 'Satu per satu mimpi dan kebahagiaan kecil kita rakit bersama. Terima kasih sudah selalu bertahan di sampingku ya sayang.', 'rainy_day', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/TULUS%20-%20Tujuh%20Belas%20(Official%20Music%20Video)%20%5BcA7Gzh2ISL0%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_3')"
                         class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
-                                <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+                                <i data-lucide="music" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Untungnya, Hidup Harus Tetap Berjalan</h3>
-                                <p class="text-xs text-gray-400">Bernadya</p>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Tujuh Belas</h3>
+                                <p class="text-xs text-gray-400">Tulus</p>
                             </div>
                         </div>
                         <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
@@ -220,16 +242,16 @@
                         </span>
                     </div>
 
-                    <!-- Lagu 3 -->
-                    <div onclick="openMusicPopup('Kita Bikin Romantis', '14 Februari 2025', 'Nggak perlu hal mewah atau liburan mahal. Sederhana aja, kayak denger lagu ini di motor pas hujan rintik-tintik, itu udah romantis banget buat aku.', 'rainy_day')" 
+                    <!-- LAGU 4 -->
+                    <div onclick="openMusicPopup('Penjaga Hati', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/nadhif%20basalamah%20-%20penjaga%20hati%20(Official%20Music%20Video)%20%5Bjia3fhBQ8qI%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
                         class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
-                                <i data-lucide="cloud-rain" class="w-5 h-5"></i>
+                                <i data-lucide="music" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Kita Bikin Romantis</h3>
-                                <p class="text-xs text-gray-400">MALIQ & D'Essentials</p>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Penjaga Hati</h3>
+                                <p class="text-xs text-gray-400">Nadhif Basalamah</p>
                             </div>
                         </div>
                         <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
@@ -237,16 +259,237 @@
                         </span>
                     </div>
 
-                    <!-- Lagu 4 -->
-                    <div onclick="openMusicPopup('Dari Planet Lain', '05 April 2025', 'Kamu tuh kayak makhluk dari planet lain yang sengaja dikirim buat bikin hidup aku yang tadinya biasa aja, jadi penuh warna dan ketawa receh kayak gini!', 'funny_stars')" 
+                    <!-- LAGU 5 -->
+                    <div onclick="openMusicPopup('Bergema Sampai Selamanya', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Nadhif%20Basalamah%20-%20bergema%20sampai%20selamanya%20(Official%20Lyric%20Video)%20%5BgvunApwKIiY%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
                         class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
-                                <i data-lucide="orbit" class="w-5 h-5"></i>
+                                <i data-lucide="music" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Dari Planet Lain</h3>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Bergema Sampai Selamanya</h3>
+                                <p class="text-xs text-gray-400">Nadhif Basalamah</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 6 -->
+                    <div onclick="openMusicPopup('Kota Ini Tak Sama Tanpamu', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Nadhif%20Basalamah%20-%20kota%20ini%20tak%20sama%20tanpamu%20(Official%20Lyric%20Video)%20%5Bgrp6FCnioMM%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Kota Ini Tak Sama Tanpamu</h3>
+                                <p class="text-xs text-gray-400">Nadhif Basalamah</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 7 -->
+                    <div onclick="openMusicPopup('Senja Sudut Kota', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/SAMUEL%20CIPTA%20-%20SENJA%20SUDUT%20KOTA%20(OFFICIAL%20MUSIC%20VIDEO)%20%5BD89cIekJNH8%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Senja Sudut Kota</h3>
+                                <p class="text-xs text-gray-400">SAMUEL Cipta</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+                
+                    <!-- LAGU 8 -->
+                    <div onclick="openMusicPopup('Shape of My Heart', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Sting%20-%20Shape%20of%20My%20Heart%20(Official%20Music%20Video)%20%5BNlwIDxCjL-8%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Shape of My Heart</h3>
+                                <p class="text-xs text-gray-400">Sting</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 9 -->
+                    <div onclick="openMusicPopup('Celengan Rindu', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Fiersa%20besari%20-%20Celengan%20rindu%20%5BX_uIsIJD7fM%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Celengan Rindu</h3>
+                                <p class="text-xs text-gray-400">Fiersa Besari</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+            
+                    <!-- LAGU 10 -->
+                    <div onclick="openMusicPopup('Untuk Perempuan Yang Sedang Di Pelukan', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Untuk%20Perempuan%20Yang%20Sedang%20Di%20Pelukan%20%5BjAYviJQYcAo%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Untuk Perempuan Yang Sedang Di Pelukan</h3>
+                                <p class="text-xs text-gray-400">Payung Teduh</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 11 -->
+                    <div onclick="openMusicPopup('Mantra', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/JENNIE%20-%20Mantra%20(Official%20Video)%20%5BbB3-CUMERIU%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Mantra</h3>
+                                <p class="text-xs text-gray-400">JENNIE</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 12 -->
+                    <div onclick="openMusicPopup('Menceritakanmu', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/BATAS%20SENJA%20-%20Menceritakanmu%20(%20OFFICIAL%20LIRIK%20VIDEO%20%5B2r-jZMVDFzI%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Menceritakanmu</h3>
+                                <p class="text-xs text-gray-400">BATAS SENJA</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 13 -->
+                    <div onclick="openMusicPopup('One Only', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Pamungkas%20-%20One%20Only%20(Lyrics%20Video)%20%5BdBFp0Ext0y8%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">One Only</h3>
+                                <p class="text-xs text-gray-400">Pamungkas</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 14 -->
+                    <div onclick="openMusicPopup('Dunia Yang Nanti', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Raim%20Laode%20-%20Dunia%20Yang%20Nanti%20(%20Lirik%20video%20)%20%5BawWKxGftWh4%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Dunia Yang Nanti</h3>
+                                <p class="text-xs text-gray-400">Raim Laode</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 15 -->
+                    <div onclick="openMusicPopup('Kita Usahakan Rumah Itu', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Sal%20Priadi%20-%20Kita%20usahakan%20rumah%20itu%20(Official%20Lyric%20Video)%20%5B7SqNVv98e8Q%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Kita Usahakan Rumah Itu</h3>
                                 <p class="text-xs text-gray-400">Sal Priadi</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 16 -->
+                    <div onclick="openMusicPopup('Nanti Kita Seperti Ini', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/BATAS%20SENJA%20-%20Nanti%20Kita%20Like%20Ini%20(OFFICIAL%20MUSIC%20VIDEO%20)%20%5Bs6H6ffS6zJI%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Nanti Kita Seperti Ini</h3>
+                                <p class="text-xs text-gray-400">Batas Senja</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 17 -->
+                    <div onclick="openMusicPopup('Taruh', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Nadin%20Amizah%20-%20Taruh%20(Official%20Lyric%20Video)%20%5BVrp2Be-RVVM%5D.mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Taruh</h3>
+                                <p class="text-xs text-gray-400">Nadin Amizah</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
+                            Buka Memoar <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- LAGU 18 (Sudah dimasukkan ke dalam Grid dengan benar) -->
+                    <div onclick="openMusicPopup('Masa Ini, Nanti, dan Masa Indah Lainnya', '14 Februari 2025', 'Hal-hal sederhana bersamamu selalu terasa luar biasa. Kita tidak perlu mewah untuk bisa bahagia dan romantis.', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Masa%20ini,%20Nanti,%20dan%20Masa%20Indah%20Lainnya%20%5BdsOGH_ZBdCM%5D%20(1).mp3', 'https://lh3.googleusercontent.com/d/ID_FOTO_LAGU_4')"
+                        class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
+                                <i data-lucide="music" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-[#4a3e3d] text-sm sm:text-base group-hover:text-[#bd7a6b] transition-colors">Masa Ini, Nanti, dan Masa Indah Lainnya</h3>
+                                <p class="text-xs text-gray-400">Nuca</p>
                             </div>
                         </div>
                         <span class="text-xs text-[#bd7a6b] font-medium flex items-center gap-1 bg-[#f7f3ed] px-3 py-1.5 rounded-lg border border-[#eaddd0]">
@@ -282,59 +525,7 @@
 
                 <!-- Grid Galeri Utama -->
                 <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <!-- Foto Item Bawaan 1 -->
-                    <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f7ebe0]">
-                            <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                            <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"First Date di Kedai Kopi"</span>
-                            <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 1]</span>
-                        </div>
-                    </div>
-
-                    <!-- Foto Item Bawaan 2 -->
-                    <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f5ebe0]">
-                            <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                            <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Jalan Sore di Taman Kota"</span>
-                            <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 2]</span>
-                        </div>
-                    </div>
-
-                    <!-- Foto Item Bawaan 3 -->
-                    <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f2e2d2]">
-                            <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                            <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Ngerayain Ultah Kamu"</span>
-                            <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 3]</span>
-                        </div>
-                    </div>
-
-                    <!-- Foto Item Bawaan 4 -->
-                    <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#ebdcd0]">
-                            <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                            <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Ketawa Gara-gara Receh"</span>
-                            <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 4]</span>
-                        </div>
-                    </div>
-
-                    <!-- Foto Item Bawaan 5 -->
-                    <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f7ebe0]">
-                            <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                            <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Senja Pertama Bareng"</span>
-                            <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 5]</span>
-                        </div>
-                    </div>
-
-                    <!-- Foto Item Bawaan 6 -->
-                    <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f5ebe0]">
-                            <i data-lucide="video" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                            <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Klip Video Random Lucu"</span>
-                            <span class="text-[10px] text-gray-400 mt-2 font-mono">[Video Placeholder]</span>
-                        </div>
-                    </div>
+                    <!-- Foto-foto default akan dimuat dan digabungkan secara dinamis di JS -->
                 </div>
             </section>
 
@@ -367,8 +558,8 @@
                     </div>
 
                     <!-- Chat Message Thread Area -->
-                    <div id="chat-thread" class="flex-grow overflow-y-auto py-4 space-y-4 pr-1">
-                        <!-- Chat default dihapus, sepenuhnya kosong dan siap digunakan -->
+                    <div id="chat-thread" class="flex-grow overflow-y-auto py-4 space-y-4 pr-1 smooth-scroll-container">
+                        <!-- Chat default sepenuhnya kosong dan siap digunakan -->
                     </div>
 
                     <!-- Chat Input Field -->
@@ -459,24 +650,27 @@
         </main>
 
         <!-- ================= PLAYLIST DETAIL POPUP (MODAL) ================= -->
-        <div id="music-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs px-6 hidden">
-            <div class="max-w-md w-full bg-[#fcfaf7] border border-[#eaddd0] rounded-3xl p-6 shadow-xl fade-in space-y-5 relative">
+        <div id="music-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6 hidden transition-all duration-300">
+            <!-- Modal Box dibuat Scrollable secara vertikal dengan transisi smooth -->
+            <div class="max-w-md w-full bg-[#fcfaf7] border border-[#eaddd0] rounded-3xl p-6 shadow-xl fade-in space-y-5 relative max-h-[85vh] overflow-y-auto scroll-smooth smooth-scroll-container pr-2">
                 
                 <!-- Close Button -->
-                <button onclick="closeMusicPopup()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <button onclick="closeMusicPopup()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10 bg-[#fcfaf7] rounded-full p-1">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
 
                 <!-- Date (Top) -->
-                <div class="border-b border-[#f3eae1] pb-2">
+                <div class="border-b border-[#f3eae1] pb-2 pt-2">
                     <span id="modal-date" class="text-xs font-mono text-[#bd7a6b] uppercase tracking-wider">12 SEPTEMBER 2024</span>
                 </div>
 
                 <!-- Title -->
                 <h3 id="modal-title" class="text-xl font-serif-aesthetic font-semibold text-[#4a3e3d]">Semua Aku Dirayakan</h3>
 
-                <!-- Middle Photo (SVG Art Style) -->
-                <div class="w-full aspect-[4/3] rounded-2xl bg-[#f5ebe0] border border-[#ebdcd0] overflow-hidden flex flex-col items-center justify-center p-6 text-center relative">
+                <!-- Middle Photo (Drive Image / SVG Fallback) -->
+                <div class="w-full aspect-[4/3] rounded-2xl bg-[#f5ebe0] border border-[#ebdcd0] overflow-hidden flex flex-col items-center justify-center relative flex-shrink-0">
+                    <img id="popup-image" src="" class="w-full h-full object-cover hidden" onerror="this.style.display='none'; document.getElementById('modal-icon-container').style.display='flex';">
+                    
                     <div id="modal-icon-container" class="w-16 h-16 rounded-full bg-white/80 flex items-center justify-center text-[#bd7a6b] mb-3 shadow-xs">
                         <i data-lucide="music-3" class="w-8 h-8"></i>
                     </div>
@@ -487,7 +681,7 @@
                 <!-- Description (Bottom) -->
                 <div class="space-y-2">
                     <h4 class="text-xs font-semibold text-[#bd7a6b] uppercase tracking-wide">Pesan Kenangan:</h4>
-                    <p id="modal-desc" class="text-sm text-[#5c4a47] leading-relaxed font-light">
+                    <p id="modal-desc" class="text-sm text-[#5c4a47] leading-relaxed font-light break-words">
                         Ini adalah tempat pesan kenangan lagumu berjalan. Cerita manis di balik setiap harmoni melodi kita yang abadi.
                     </p>
                 </div>
@@ -501,10 +695,9 @@
             </div>
         </div>
 
-        <!-- ================= STICKY AUDIO PLAYER (Moved slightly up to prevent overlapping) ================= -->
+        <!-- ================= STICKY AUDIO PLAYER ================= -->
         <div class="fixed bottom-24 right-4 z-40 bg-[#fbf9f6] border border-[#eaddd0] rounded-2xl p-3 shadow-md max-w-xs flex items-center space-x-3.5 fade-in">
             <div class="relative flex-shrink-0">
-                <!-- Rotating Vinyl Record Effect (Dibuat diam di awal, hanya berputar saat memutar lagu) -->
                 <div id="vinyl-record" class="w-10 h-10 rounded-full bg-[#27272a] flex items-center justify-center">
                     <span class="w-3 h-3 rounded-full bg-[#fbf9f6]"></span>
                 </div>
@@ -528,12 +721,12 @@
                 <i data-lucide="home" class="w-6 h-6"></i>
             </button>
             
-            <!-- Search Tab Button (Lagu - Ganti dengan Icon Music) -->
+            <!-- Search Tab Button (Lagu) -->
             <button id="nav-search" onclick="switchTab('search')" class="flex flex-col items-center justify-center text-[#8e766e] hover:text-[#bd7a6b] transition-all transform hover:scale-105" title="Melodi">
                 <i data-lucide="music" class="w-6 h-6"></i>
             </button>
             
-            <!-- Create Post Tab Button (Galeri - Ganti dengan Icon Image/Gallery) -->
+            <!-- Create Post Tab Button (Galeri) -->
             <button id="nav-plus" onclick="switchTab('plus')" class="flex flex-col items-center justify-center text-[#8e766e] hover:text-[#bd7a6b] transition-all transform hover:scale-105" title="Galeri">
                 <i data-lucide="image" class="w-6 h-6"></i>
             </button>
@@ -550,17 +743,53 @@
                 </div>
             </button>
         </div>
+    </div>
 
+    <!-- Firebase App dan Services -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <!-- Script Logika Interaktif -->
-    <script>
-        // Inisialisasi ikon Lucide
+        // Konfigurasi Database Cloud (Menggunakan variabel global platform)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'ayyaa-ikii-couplegram';
+        let db = null;
+        let auth = null;
+        let isFirebaseReady = false;
+
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            try {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isFirebaseReady = true;
+            } catch (e) {
+                console.error("Gagal melakukan inisialisasi Firebase: ", e);
+            }
+        }
+
+        // Simpan referensi ke data lokal jika Firebase tidak aktif / sedang offline
+        let fallbackChats = JSON.parse(localStorage.getItem('ayyaa_ikii_chat')) || [];
+        let fallbackGallery = JSON.parse(localStorage.getItem('ayyaa_ikii_gallery_custom')) || [];
+
+        // Inisialisasi ikon Lucide secara global
         lucide.createIcons();
 
         // Variabel Pengirim Pesan Default
         let currentSender = 'ayyaa';
 
-        // Helper untuk mencegah HTML break / XSS saat ketik pesan di chat
+        // Daftar 6 Foto Bawaan Utama agar tidak hilang
+        const defaultGalleryItems = [
+            {
+                url: "https://lh3.googleusercontent.com/d/1TvvkzFgSApHrYu-hMQMtiYZt9vZP-N-j",
+                caption: "First Date di Gellato",
+                id: "default-1",
+                isDefault: true
+            }
+        ];
+
+        // Antarmuka pencegah XSS input
         function escapeHTML(str) {
             return str.replace(/[&<>'"]/g, 
                 tag => ({
@@ -573,8 +802,8 @@
             );
         }
 
-        // Check Password Gate
-        function checkPassword() {
+        // Buka Jurnal Kita (Check Password Gate)
+        async function checkPassword() {
             const passwordInput = document.getElementById('password-input').value;
             const errorText = document.getElementById('password-error');
             const passwordGate = document.getElementById('password-gate');
@@ -582,23 +811,34 @@
             const mainContent = document.getElementById('main-content');
 
             if (passwordInput === '092008') {
-                // Sembunyikan gate dengan efek transisi lembut
                 passwordGate.style.opacity = '0';
-                passwordGate.style.transition = 'opacity 0.5s ease-out';
-                setTimeout(() => {
+                passwordGate.style.transition = 'opacity 0.3s ease-out';
+                setTimeout(async () => {
                     passwordGate.classList.add('hidden');
                     mainContent.classList.remove('hidden');
-                    switchTab('home'); // Tampilkan halaman beranda pertama kali
-                    loadMessagesFromStorage(); // Muat pesan dari local storage
-                    loadDriveGalleryItems(); // Muat galeri kustom dari local storage
+                    switchTab('home');
+
+                    // Lakukan proses autentikasi Firebase jika tersedia sebelum memanggil data
+                    if (isFirebaseReady) {
+                        try {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (err) {
+                            console.error("Gagal melakukan autentikasi diam-diam: ", err);
+                        }
+                    }
+
+                    // Sinkronisasi data awal
+                    setupDataListeners();
                     
-                    // Mulai countdown ulang tahun secara real-time setiap detik
                     setInterval(updateBirthdayCountdowns, 1000);
                     updateBirthdayCountdowns();
-                }, 500);
+                }, 300);
             } else {
                 errorText.classList.remove('hidden');
-                // Beri efek getar sedikit pada card input dan warna border merah tegas
                 passwordCard.classList.add('shake', 'border-red-400');
                 const inputElement = document.getElementById('password-input');
                 inputElement.classList.add('border-red-400', 'ring-2', 'ring-red-300');
@@ -610,23 +850,21 @@
             }
         }
 
-        // Enter key di password input
+        // Hubungkan Input Password ke Enter Key
         document.getElementById('password-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 checkPassword();
             }
         });
 
-        // Tab Switcher Logic (Instagram Style)
+        // Tab Switcher Logic
         function switchTab(tabName) {
-            // Sembunyikan semua section
             document.getElementById('home-sec').classList.add('hidden');
             document.getElementById('playlist-sec').classList.add('hidden');
             document.getElementById('gallery-sec').classList.add('hidden');
             document.getElementById('chat-sec').classList.add('hidden');
             document.getElementById('profile-sec').classList.add('hidden');
 
-            // Tampilkan section yang dipilih
             if (tabName === 'home') {
                 document.getElementById('home-sec').classList.remove('hidden');
             } else if (tabName === 'search') {
@@ -639,7 +877,6 @@
                 document.getElementById('profile-sec').classList.remove('hidden');
             }
 
-            // Ubah gaya navigasi tombol aktif
             const tabs = ['home', 'search', 'plus', 'chat', 'profile'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`nav-${t}`);
@@ -652,14 +889,10 @@
                 }
             });
 
-            // Re-render Lucide icons
             lucide.createIcons();
-            
-            // Scroll otomatis ke atas agar tidak terpotong saat pindah tab
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Map smooth scroll ke tab switcher agar tombol orisinal tetap berfungsi
         function scrollToSection(sectionId) {
             if (sectionId === 'home-sec') switchTab('home');
             else if (sectionId === 'playlist-sec') switchTab('search');
@@ -667,7 +900,7 @@
             else if (sectionId === 'chat-sec') switchTab('chat');
         }
 
-        // Logika Hitung Mundur Ulang Tahun (12 September & 19 September)
+        // Countdown Hari Spesial
         function getNextBirthday(month, day) {
             const now = new Date();
             let bday = new Date(now.getFullYear(), month - 1, day, 0, 0, 0);
@@ -696,17 +929,15 @@
             const minutesI = Math.floor((diffIkii % (1000 * 60 * 60)) / (1000 * 60));
             const secondsI = Math.floor((diffIkii % (1000 * 60)) / 1000);
 
-            // Tampilkan ke DOM
             document.getElementById('ayyaa-birthday-countdown').innerHTML = 
                 `${daysA}d ${hoursA}h ${minutesA}m ${secondsA}s`;
             document.getElementById('ikii-birthday-countdown').innerHTML = 
                 `${daysI}d ${hoursI}h ${minutesI}m ${secondsI}s`;
         }
 
-        // Parse link Google Drive menjadi direct-link rendering
+        // Parse link Google Drive menjadi direct-link
         function parseDriveUrl(url) {
             url = url.trim();
-            // Cek jika mengandung ID file Google Drive (/file/d/[id] atau ?id=[id])
             const regFileD = /\/file\/d\/([a-zA-Z0-9_-]+)/;
             const regIdParam = /[?&]id=([a-zA-Z0-9_-]+)/;
             const regLh3 = /\/d\/([a-zA-Z0-9_-]+)/;
@@ -723,145 +954,164 @@
             if (id) {
                 return `https://lh3.googleusercontent.com/d/${id}`;
             }
-
-            // Jika bukan Google Drive, return link aslinya (agar gambar web lain juga bisa ditambahkan)
             return url;
         }
 
-        // Menambahkan Item Media ke Galeri
-        function addDriveItem() {
+        // Listener Real-time & Sinkronisasi Data Firestore
+        function setupDataListeners() {
+            if (isFirebaseReady && auth.currentUser) {
+                // 1. Sinkronisasi Obrolan secara Real-time dari Cloud
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'chats'), (snapshot) => {
+                    let messages = [];
+                    snapshot.forEach(doc => {
+                        messages.push({ id: doc.id, ...doc.data() });
+                    });
+                    // Urutkan berdasarkan waktu di memori lokal (Aturan 2)
+                    messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                    renderMessages(messages);
+                }, (error) => {
+                    console.error("Gagal sinkronisasi chat cloud:", error);
+                    renderMessages(fallbackChats);
+                });
+
+                // 2. Sinkronisasi Galeri Tambahan dari Cloud
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'gallery'), (snapshot) => {
+                    let customItems = [];
+                    snapshot.forEach(doc => {
+                        customItems.push({ id: doc.id, ...doc.data() });
+                    });
+                    customItems.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                    renderGallery(customItems);
+                }, (error) => {
+                    console.error("Gagal sinkronisasi galeri cloud:", error);
+                    renderGallery(fallbackGallery.map((url, i) => ({ id: `local-${i}`, url })));
+                });
+
+            } else {
+                // Gunakan mode luring (offline) dengan LocalStorage jika Cloud tidak diset
+                renderMessages(fallbackChats);
+                renderGallery(fallbackGallery.map((url, i) => ({ id: `local-${i}`, url })));
+            }
+        }
+
+        // Simpan Foto Baru ke Cloud / Local
+        async function addDriveItem() {
             const inputElement = document.getElementById('drive-link-input');
             const rawUrl = inputElement.value.trim();
             if (!rawUrl) return;
 
             const finalUrl = parseDriveUrl(rawUrl);
 
-            // Ambil data yang tersimpan
-            let customItems = JSON.parse(localStorage.getItem('ayyaa_ikii_gallery_custom')) || [];
-            customItems.push(finalUrl);
-            localStorage.setItem('ayyaa_ikii_gallery_custom', JSON.stringify(customItems));
+            if (isFirebaseReady && auth.currentUser) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'gallery'), {
+                        url: finalUrl,
+                        timestamp: Date.now()
+                    });
+                } catch (e) {
+                    console.error("Gagal mengunggah foto ke database cloud: ", e);
+                }
+            } else {
+                fallbackGallery.push(finalUrl);
+                localStorage.setItem('ayyaa_ikii_gallery_custom', JSON.stringify(fallbackGallery));
+                renderGallery(fallbackGallery.map((url, i) => ({ id: `local-${i}`, url })));
+            }
 
-            // Render ulang dan kosongkan input
-            loadDriveGalleryItems();
             inputElement.value = '';
         }
 
-        // Menghapus Item Media dari Galeri
-        function deleteDriveItem(index) {
-            let customItems = JSON.parse(localStorage.getItem('ayyaa_ikii_gallery_custom')) || [];
-            customItems.splice(index, 1);
-            localStorage.setItem('ayyaa_ikii_gallery_custom', JSON.stringify(customItems));
-            loadDriveGalleryItems();
+        // Hapus Foto dari Cloud / Local
+        async function deleteDriveItem(id, index) {
+            if (isFirebaseReady && auth.currentUser && !id.startsWith('local-')) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gallery', id));
+                } catch (e) {
+                    console.error("Gagal menghapus foto dari database cloud: ", e);
+                }
+            } else {
+                const fallbackIndex = parseInt(id.replace('local-', '')) || index;
+                fallbackGallery.splice(fallbackIndex, 1);
+                localStorage.setItem('ayyaa_ikii_gallery_custom', JSON.stringify(fallbackGallery));
+                renderGallery(fallbackGallery.map((url, i) => ({ id: `local-${i}`, url })));
+            }
         }
 
-        // Memuat Item Google Drive ke Grid Galeri
-        function loadDriveGalleryItems() {
+        // Render Seluruh Grid Galeri (Foto Bawaan + Kustom)
+        function renderGallery(customItems = []) {
             const grid = document.getElementById('gallery-grid');
-            
-            // Simpan item bawaan (6 item pertama)
-            const defaultItemsHTML = `
-                <!-- Foto Item Bawaan 1 -->
-                <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                    <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f7ebe0]">
-                        <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                        <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"First Date di Kedai Kopi"</span>
-                        <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 1]</span>
+            grid.innerHTML = '';
+
+            // Render 6 Foto Utama bawaan terlebih dahulu
+            defaultGalleryItems.forEach((item, idx) => {
+                const defaultCardHTML = `
+                    <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
+                        <img src="${item.url}" 
+                             onerror="this.style.display='none'; document.getElementById('fb-foto-${idx}').style.display='flex';" 
+                             class="w-full h-full object-cover">
+                        <div id="fb-foto-${idx}" class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f7ebe0]">
+                            <i data-lucide="${item.isVideo ? 'video' : 'image'}" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
+                            <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"${item.caption}"</span>
+                            <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto ${idx + 1}]</span>
+                        </div>
                     </div>
-                </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', defaultCardHTML);
+            });
 
-                <!-- Foto Item Bawaan 2 -->
-                <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                    <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f5ebe0]">
-                        <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                        <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Jalan Sore di Taman Kota"</span>
-                        <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 2]</span>
-                    </div>
-                </div>
-
-                <!-- Foto Item Bawaan 3 -->
-                <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                    <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f2e2d2]">
-                        <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                        <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Ngerayain Ultah Kamu"</span>
-                        <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 3]</span>
-                    </div>
-                </div>
-
-                <!-- Foto Item Bawaan 4 -->
-                <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                    <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#ebdcd0]">
-                        <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                        <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Ketawa Gara-gara Receh"</span>
-                        <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 4]</span>
-                    </div>
-                </div>
-
-                <!-- Foto Item Bawaan 5 -->
-                <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                    <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f7ebe0]">
-                        <i data-lucide="image" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                        <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Senja Pertama Bareng"</span>
-                        <span class="text-[10px] text-gray-400 mt-2 font-mono">[Foto 5]</span>
-                    </div>
-                </div>
-
-                <!-- Foto Item Bawaan 6 -->
-                <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
-                    <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#f5ebe0]">
-                        <i data-lucide="video" class="w-8 h-8 text-[#dbbc9d] mb-2"></i>
-                        <span class="text-xs font-serif-aesthetic italic text-[#8e766e]">"Klip Video Random Lucu"</span>
-                        <span class="text-[10px] text-gray-400 mt-2 font-mono">[Video Placeholder]</span>
-                    </div>
-                </div>
-            `;
-
-            grid.innerHTML = defaultItemsHTML;
-
-            // Ambil item kustom dari local storage
-            let customItems = JSON.parse(localStorage.getItem('ayyaa_ikii_gallery_custom')) || [];
-
-            customItems.forEach((url, index) => {
-                const cardHTML = `
+            // Tambahkan foto custom yang tersimpan permanen
+            customItems.forEach((item, index) => {
+                const customCardHTML = `
                     <div class="group relative aspect-square bg-[#fcfaf7] border border-[#eaddd0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
-                        <img src="${url}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect width=%22100%22 height=%22100%22 fill=%22%23f5ebe0%22/><text x=%2250%%22 y=%2250%%22 font-family=%22sans-serif%22 font-size=%2210%22 fill=%22%23bd7a6b%22 text-anchor=%22middle%22 dy=%22.3em%22>Media Ditambahkan</text></svg>';" />
-                        <!-- Tombol Hapus overlay -->
+                        <img src="${item.url}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect width=%22100%22 height=%22100%22 fill=%22%23f5ebe0%22/><text x=%2250%%22 y=%2250%%22 font-family=%22sans-serif%22 font-size=%2210%22 fill=%22%23bd7a6b%22 text-anchor=%22middle%22 dy=%22.3em%22>Media Ditambahkan</text></svg>';" />
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button onclick="deleteDriveItem(${index})" class="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-full shadow-lg transition-transform hover:scale-110">
+                            <button onclick="deleteDriveItem('${item.id}', ${index})" class="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-full shadow-lg transition-transform hover:scale-110">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
                 `;
-                grid.insertAdjacentHTML('beforeend', cardHTML);
+                grid.insertAdjacentHTML('beforeend', customCardHTML);
             });
 
             lucide.createIcons();
         }
 
-        // Toggle Audio Player (Simulasi Play/Pause)
-        let isAudioPlaying = false; // Dimulai dengan false (tidak otomatis memutar lagu bawaan)
+        // Kontrol Pemutar Audio Global
+        let isAudioPlaying = false; 
+        const audioEl = document.getElementById('global-audio');
+
         function toggleGlobalAudio() {
             const playBtn = document.getElementById('global-play-btn');
             const nowPlaying = document.getElementById('now-playing-title');
             const vinyl = document.getElementById('vinyl-record');
             
+            if (!audioEl.src || audioEl.src === window.location.href) {
+                nowPlaying.innerText = "Pilih Memoar Lagu...";
+                return;
+            }
+
             if (isAudioPlaying) {
+                audioEl.pause();
                 playBtn.innerHTML = '<i data-lucide="play" class="w-4 h-4 fill-current"></i>';
                 nowPlaying.classList.add('opacity-60');
                 vinyl.classList.remove('animate-spin');
                 isAudioPlaying = false;
             } else {
-                playBtn.innerHTML = '<i data-lucide="pause" class="w-4 h-4 fill-current"></i>';
-                nowPlaying.classList.remove('opacity-60');
-                vinyl.classList.add('animate-spin');
-                vinyl.style.animationDuration = '8s';
-                isAudioPlaying = true;
+                audioEl.play().then(() => {
+                    playBtn.innerHTML = '<i data-lucide="pause" class="w-4 h-4 fill-current"></i>';
+                    nowPlaying.classList.remove('opacity-60');
+                    vinyl.classList.add('animate-spin');
+                    vinyl.style.animationDuration = '8s';
+                    isAudioPlaying = true;
+                }).catch(err => {
+                    console.log("Audio play blocked / error:", err);
+                });
             }
             lucide.createIcons();
         }
 
-        // Open Music Memoar Popup
-        function openMusicPopup(title, date, description, theme) {
+        // Buka Popup Modal Memoar Musik
+        function openMusicPopup(title, date, story, theme, musicUrl, imageUrl) {
             const modal = document.getElementById('music-modal');
             const modalTitle = document.getElementById('modal-title');
             const modalDate = document.getElementById('modal-date');
@@ -870,14 +1120,22 @@
             const iconContainer = document.getElementById('modal-icon-container');
             const vinyl = document.getElementById('vinyl-record');
             const playBtn = document.getElementById('global-play-btn');
+            const popupImage = document.getElementById('popup-image');
 
-            // Update konten popup modal sesuai parameter lagu
+            if (imageUrl && !imageUrl.includes("ID_FOTO_LAGU")) {
+                popupImage.src = imageUrl;
+                popupImage.style.display = 'block';
+                iconContainer.style.display = 'none';
+            } else {
+                popupImage.style.display = 'none';
+                iconContainer.style.display = 'flex';
+            }
+
             modalTitle.innerText = title;
             modalDate.innerText = date.toUpperCase();
-            modalDesc.innerText = description;
+            modalDesc.innerText = story;
             nowPlayingTitle.innerText = title;
 
-            // Beri animasi ikon berbeda berdasarkan tema lagu
             if (theme === 'romantic_sunset') {
                 iconContainer.innerHTML = '<i data-lucide="sun" class="w-8 h-8 text-amber-500"></i>';
             } else if (theme === 'cozy_night') {
@@ -888,25 +1146,36 @@
                 iconContainer.innerHTML = '<i data-lucide="sparkles" class="w-8 h-8 text-yellow-500"></i>';
             }
 
-            // Aktifkan putaran vinyl dan ubah tombol jadi pause karena lagu diputar
-            isAudioPlaying = true;
-            playBtn.innerHTML = '<i data-lucide="pause" class="w-4 h-4 fill-current"></i>';
-            nowPlayingTitle.classList.remove('opacity-60');
-            vinyl.classList.add('animate-spin');
-            vinyl.style.animationDuration = '8s';
+            if (musicUrl && !musicUrl.includes("raw.githubusercontent.com/username/")) {
+                audioEl.src = musicUrl;
+                audioEl.load();
+                audioEl.play().then(() => {
+                    isAudioPlaying = true;
+                    playBtn.innerHTML = '<i data-lucide="pause" class="w-4 h-4 fill-current"></i>';
+                    nowPlayingTitle.classList.remove('opacity-60');
+                    vinyl.classList.add('animate-spin');
+                    vinyl.style.animationDuration = '8s';
+                }).catch(e => console.log("Gagal memutar audio otomatis:", e));
+            } else {
+                isAudioPlaying = true;
+                playBtn.innerHTML = '<i data-lucide="pause" class="w-4 h-4 fill-current"></i>';
+                nowPlayingTitle.classList.remove('opacity-60');
+                vinyl.classList.add('animate-spin');
+                vinyl.style.animationDuration = '8s';
+            }
 
-            // Tampilkan Modal
             modal.classList.remove('hidden');
+            // Pastikan scroll berada di posisi teratas saat popup dibuka
+            modal.querySelector('.smooth-scroll-container').scrollTop = 0;
             lucide.createIcons();
         }
 
-        // Close Music Memoar Popup
         function closeMusicPopup() {
             const modal = document.getElementById('music-modal');
             modal.classList.add('hidden');
         }
 
-        // Switch Sender in Chat (dm)
+        // Ubah Pengirim DM
         function setSender(sender) {
             const btnAyyaa = document.getElementById('sender-ayyaa');
             const btnIkii = document.getElementById('sender-ikii');
@@ -920,87 +1189,107 @@
                 btnIkii.className = "px-4 py-1.5 rounded-lg font-medium transition-all bg-[#e79e8c] text-white shadow-sm";
                 btnAyyaa.className = "px-4 py-1.5 rounded-lg font-medium transition-all text-[#8e766e] hover:text-[#bd7a6b]";
             }
+
+            setupDataListeners();
         }
 
-        // Send Chat Message
-        function sendChatMessage() {
+        // Kirim Pesan Direct Message baru
+        async function sendChatMessage() {
             const chatInput = document.getElementById('chat-input');
             const messageText = chatInput.value.trim();
 
             if (messageText === '') return;
 
-            // Mendapatkan Jam Sekarang
             const now = new Date();
             const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            // Enkripsi string teks agar layout HTML aman
             const safeText = escapeHTML(messageText);
 
             const messageObj = {
                 sender: currentSender,
                 text: safeText,
-                time: timeString
+                time: timeString,
+                timestamp: Date.now()
             };
 
-            // Simpan ke local storage agar persisten di reload
-            let messages = JSON.parse(localStorage.getItem('ayyaa_ikii_chat')) || [];
-            messages.push(messageObj);
-            localStorage.setItem('ayyaa_ikii_chat', JSON.stringify(messages));
+            if (isFirebaseReady && auth.currentUser) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats'), messageObj);
+                } catch (e) {
+                    console.error("Gagal mengirim pesan ke database cloud: ", e);
+                }
+            } else {
+                fallbackChats.push(messageObj);
+                localStorage.setItem('ayyaa_ikii_chat', JSON.stringify(fallbackChats));
+                renderMessages(fallbackChats);
+            }
 
-            // Render ulang semua chat
-            renderMessages();
-
-            // Clear input
             chatInput.value = '';
         }
 
-        // Render Messages in Chat Thread
-        function renderMessages() {
+        // Render Thread DM secara Dinamis sesuai Switch Pengirim
+        function renderMessages(messagesList = []) {
             const thread = document.getElementById('chat-thread');
-            // Menjadikan chat awal benar-benar kosong sesuai request
-            thread.innerHTML = ``;
+            thread.innerHTML = '';
 
-            let messages = JSON.parse(localStorage.getItem('ayyaa_ikii_chat')) || [];
+            messagesList.forEach(msg => {
+                const isMyMessage = (msg.sender === currentSender);
+                const initial = msg.sender === 'ikii' ? 'I' : 'A';
+                const avatarBg = msg.sender === 'ikii' ? 'bg-[#bd7a6b] text-white' : 'bg-[#f1e4d8] text-[#8e766e]';
 
-            messages.forEach(msg => {
-                const isMe = msg.sender === 'ikii'; // asumsikan ikii di kanan, ayyaa di kiri atau sebaliknya
-                const itemHTML = isMe ? `
-                    <div class="flex items-start justify-end space-x-2.5">
-                        <div class="max-w-[75%] bg-[#f7ebe0] border border-[#ebdcd0] p-3.5 rounded-2xl rounded-tr-none shadow-xs">
-                            <span class="block text-[10px] font-semibold text-[#bd7a6b] text-right mb-1">${msg.sender}</span>
-                            <p class="text-sm text-[#4a3e3d]">${msg.text}</p>
-                            <span class="block text-[9px] text-gray-400 text-left mt-1.5">${msg.time}</span>
+                let itemHTML = '';
+
+                if (isMyMessage) {
+                    itemHTML = `
+                        <div class="flex items-start justify-end space-x-2.5">
+                            <div class="max-w-[75%] bg-[#f7ebe0] border border-[#ebdcd0] p-3.5 rounded-2xl rounded-tr-none shadow-xs">
+                                <span class="block text-[10px] font-semibold text-[#bd7a6b] text-right mb-1">${msg.sender} (Anda)</span>
+                                <p class="text-sm text-[#4a3e3d] text-right break-words">${msg.text}</p>
+                                <span class="block text-[9px] text-gray-400 text-left mt-1.5">${msg.time}</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full ${avatarBg} flex items-center justify-center text-xs font-bold flex-shrink-0">${initial}</div>
                         </div>
-                        <div class="w-8 h-8 rounded-full bg-[#bd7a6b] flex items-center justify-center text-xs font-bold text-white">I</div>
-                    </div>
-                ` : `
-                    <div class="flex items-start space-x-2.5">
-                        <div class="w-8 h-8 rounded-full bg-[#f1e4d8] flex items-center justify-center text-xs font-bold text-[#8e766e]">A</div>
-                        <div class="max-w-[75%] bg-white border border-[#eaddd0] p-3.5 rounded-2xl rounded-tl-none shadow-xs">
-                            <span class="block text-[10px] font-semibold text-[#bd7a6b] mb-1">${msg.sender}</span>
-                            <p class="text-sm text-[#4a3e3d]">${msg.text}</p>
-                            <span class="block text-[9px] text-gray-400 text-right mt-1.5">${msg.time}</span>
+                    `;
+                } else {
+                    itemHTML = `
+                        <div class="flex items-start space-x-2.5">
+                            <div class="w-8 h-8 rounded-full ${avatarBg} flex items-center justify-center text-xs font-bold flex-shrink-0">${initial}</div>
+                            <div class="max-w-[75%] bg-white border border-[#eaddd0] p-3.5 rounded-2xl rounded-tl-none shadow-xs">
+                                <span class="block text-[10px] font-semibold text-[#bd7a6b] mb-1">${msg.sender}</span>
+                                <p class="text-sm text-[#4a3e3d] break-words">${msg.text}</p>
+                                <span class="block text-[9px] text-gray-400 text-right mt-1.5">${msg.time}</span>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
                 thread.insertAdjacentHTML('beforeend', itemHTML);
             });
 
-            // Scroll otomatis ke chat terbawah
-            thread.scrollTop = thread.scrollHeight;
+            // Scroll otomatis yang sangat halus ke pesan terbawah
+            thread.scrollTo({
+                top: thread.scrollHeight,
+                behavior: 'smooth'
+            });
         }
 
-        // Memuat pesan pas awal masuk
-        function loadMessagesFromStorage() {
-            renderMessages();
-        }
-
-        // Enter key di input chat
+        // Hubungkan Chat Input ke Tombol Enter
         document.getElementById('chat-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendChatMessage();
             }
         });
+
+        // Hubungkan semua fungsi utama ke object window agar berjalan di runtime HTML Inline
+        window.checkPassword = checkPassword;
+        window.switchTab = switchTab;
+        window.scrollToSection = scrollToSection;
+        window.addDriveItem = addDriveItem;
+        window.deleteDriveItem = deleteDriveItem;
+        window.toggleGlobalAudio = toggleGlobalAudio;
+        window.openMusicPopup = openMusicPopup;
+        window.closeMusicPopup = closeMusicPopup;
+        window.setSender = setSender;
+        window.sendChatMessage = sendChatMessage;
+
     </script>
 </body>
 </html>
