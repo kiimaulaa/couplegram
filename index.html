@@ -111,6 +111,10 @@
                 <div class="flex items-center space-x-2">
                     <span class="text-2xl font-serif-aesthetic font-semibold text-[#bd7a6b] tracking-wider cursor-pointer" onclick="switchTab('home')">About Us</span>
                     <span class="text-xs px-2 py-0.5 rounded-full bg-[#f1e4d8] text-[#8e766e] font-medium"> Love</span>
+                    <!-- Indikator Koneksi Realtime -->
+                    <span id="db-status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Menyambungkan...
+                    </span>
                 </div>
                 <!-- Instagram Top Icons -->
                 <div class="flex items-center space-x-5 text-[#8e766e]">
@@ -230,7 +234,7 @@
                     </div>
 
                     <!-- LAGU 3 -->
-                    <div onclick="openMusicPopup('Jatuh Suka', 'Yogyakarta', 'Seperti 3726 mdpl, selalu butuh waktu yang lama untuk mendapatkan sesuatu yang indah. -3726 mdpl.', 'rainy_day', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/TULUS%20-%20Jatuh%20Suka%20(Official%20Lyric%20Video)%20%5B2uJut6USftQ%5D.mp3', 'https://lh3.googleusercontent.com/d/1jrcTIlvUwQPy0c1CcQQ3h8Zb_aH5BmJ9')"
+                    <div onclick="openMusicPopup('Jatuh Suka', 'Yogyakarta', 'Seperti 3726 mdpl, selalu butuh waktu yang lama untuk mendapatkan sesuatu di kehidupan ini. -3726 mdpl.', 'rainy_day', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/TULUS%20-%20Jatuh%20Suka%20(Official%20Lyric%20Video)%20%5B2uJut6USftQ%5D.mp3', 'https://lh3.googleusercontent.com/d/1jrcTIlvUwQPy0c1CcQQ3h8Zb_aH5BmJ9')"
                         class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
@@ -502,7 +506,7 @@
                     </div>
 
                     <!-- LAGU 19 -->
-                    <div onclick="openMusicPopup('Foto Kita Blur', 'Yogyakarta', 'Diantara foto kita yang blur, semoga kamu tetep jelas buat bersinar. -kii', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Sal%20Priadi%20-%20Foto%20kita%20blur%20(Official%20Lyric%20Video)%20%5BytMxh-_6EcI%5D.mp3', 'https://lh3.googleusercontent.com/d/14jkonrfeC_SGK8iNA0E75OmjjSULahlQ')"
+                    <div onclick="openMusicPopup('Foto Kita Blur', 'Yogyakarta', 'Diantara foto kita yang blur, semoga kamu tetep jelas buat bersinar. -3726 mdpl', 'sparkles', 'https://github.com/kiimaulaa/lagu-web/raw/refs/heads/main/Sal%20Priadi%20-%20Foto%20kita%20blur%20(Official%20Lyric%20Video)%20%5BytMxh-_6EcI%5D.mp3', 'https://lh3.googleusercontent.com/d/14jkonrfeC_SGK8iNA0E75OmjjSULahlQ')"
                         class="flex items-center justify-between p-4 bg-[#fcfaf7] hover:bg-[#fbf4ed] border border-[#eaddd0] rounded-2xl cursor-pointer transition-all group shadow-sm hover:shadow">
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 rounded-xl bg-[#e79e8c]/20 flex items-center justify-center text-[#bd7a6b] group-hover:scale-110 transition-transform">
@@ -581,6 +585,25 @@
                     <!-- Chat Message Thread Area -->
                     <div id="chat-thread" class="flex-grow overflow-y-auto py-4 space-y-4 pr-1 smooth-scroll-container">
                         <!-- Chat default sepenuhnya kosong dan siap digunakan -->
+                    </div>
+
+                    <!-- Warning Banner Database Cloud (Akan muncul jika Aturan Keamanan Firebase ditolak) -->
+                    <div id="db-warning-banner" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl p-3.5 space-y-1 mb-4 mx-2">
+                        <p class="font-bold flex items-center gap-1.5">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i> Database Cloud Belum Siap / Luring
+                        </p>
+                        <p class="text-gray-600 leading-relaxed font-light">
+                            Pesan hanya tersimpan di browser ini saja. Agar HP kii dan HP ayyaa bisa saling tersinkron secara realtime, pastikan Anda telah mengubah <strong>Aturan Keamanan (Rules) Firestore</strong> Anda di Firebase Console menjadi:
+                        </p>
+                        <pre id="db-rules-pre" class="bg-gray-800 text-gray-200 p-2 rounded-lg font-mono text-[10px] mt-1 overflow-x-auto">
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /artifacts/{appId}/public/data/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</pre>
                     </div>
 
                     <!-- Chat Input Field -->
@@ -837,7 +860,7 @@
             apiKey: "AIzaSyDLRPLT4wj9Z5Ty4E9zHiWM2J1XsFt51H4",
             authDomain: "kiiayyaa.firebaseapp.com",
             projectId: "kiiayyaa",
-            storageBucket: "kiiayyaa.firebasestorage.app", // Perbaikan spasi
+            storageBucket: "kiiayyaa.firebasestorage.app", // Dipastikan tanpa spasi
             messagingSenderId: "493602497047",
             appId: "1:493602497047:web:df1dd4f9f96f8fb8eeb252"
         };
@@ -848,12 +871,16 @@
         let isFirebaseReady = false;
         let currentAuthUser = null;
 
+        // Referensi pembersih listener realtime untuk mencegah duplikasi render
+        let unsubscribeChats = null;
+        let unsubscribeGallery = null;
+
         // Pilih konfigurasi Firebase yang akan digunakan
         let firebaseConfig = null;
 
         if (typeof __firebase_config !== 'undefined' && __firebase_config) {
             try {
-                firebaseConfig = JSON.parse(__firebase_config);
+                firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
             } catch (e) {
                 console.error("Gagal melakukan inisialisasi platform Firebase: ", e);
             }
@@ -871,7 +898,7 @@
             }
         }
 
-        // Inisialisasi Firebase & Autentikasi segera di awal jika config tersedia
+        // Jalankan Autentikasi terlebih dahulu secara aman (Aturan 3)
         if (firebaseConfig) {
             try {
                 const app = initializeApp(firebaseConfig);
@@ -879,33 +906,67 @@
                 db = getFirestore(app);
                 isFirebaseReady = true;
 
-                // Monitor perubahan status auth secara real-time
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentAuthUser = user;
-                        // Setup listener data cloud begitu pengguna terotentikasi (Aturan 3)
-                        setupDataListeners();
-                    } else {
-                        // Jika belum login, jalankan autentikasi secara diam-diam terlebih dahulu
-                        triggerAuthSilent();
+                // Memulai proses login anonim di latar belakang
+                const initAuth = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (err) {
+                        console.error("Gagal melakukan login anonim otomatis:", err);
+                        updateUIConnectionStatus(false);
                     }
+                };
+
+                // Pantau perubahan status setelah inisialisasi login selesai
+                initAuth().then(() => {
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            currentAuthUser = user;
+                            updateUIConnectionStatus(true);
+                            setupDataListeners();
+                        } else {
+                            updateUIConnectionStatus(false);
+                        }
+                    });
                 });
+
             } catch (e) {
                 console.error("Gagal memulai modul Firebase: ", e);
+                updateUIConnectionStatus(false);
+            }
+        } else {
+            updateUIConnectionStatus(false);
+        }
+
+        // Mengubah tampilan indikator koneksi database realtime di header
+        function updateUIConnectionStatus(connected) {
+            const badge = document.getElementById('db-status-badge');
+            if (!badge) return;
+
+            if (connected) {
+                badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium flex items-center gap-1";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Terhubung (Cloud)`;
+                document.getElementById('db-warning-banner').classList.add('hidden');
+            } else {
+                badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium flex items-center gap-1";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Luring (Offline)`;
             }
         }
 
-        async function triggerAuthSilent() {
-            if (!isFirebaseReady || !auth) return;
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Gagal melakukan autentikasi diam-diam: ", err);
-            }
+        // Injeksi aturan keamanan secara dinamis sesuai appId
+        const rulesPre = document.getElementById('db-rules-pre');
+        if (rulesPre) {
+            rulesPre.textContent = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /artifacts/${appId}/public/data/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}`;
         }
 
         // Simpan referensi ke data lokal jika Firebase tidak aktif / sedang offline
@@ -957,12 +1018,7 @@
                     mainContent.classList.remove('hidden');
                     switchTab('home');
 
-                    // Jika Firebase belum aktif/masih login, picu auth silent
-                    if (isFirebaseReady && !currentAuthUser) {
-                        await triggerAuthSilent();
-                    }
-
-                    // Sinkronisasi data awal/lokal sebagai cadangan sebelum snapshot aktif
+                    // Sinkronisasi data awal offline/cadangan jika Firebase gagal/belum merespon
                     if (!isFirebaseReady || !currentAuthUser) {
                         setupDataListeners();
                     }
@@ -1092,10 +1148,20 @@
 
         // Listener Real-time & Sinkronisasi Data Firestore
         function setupDataListeners() {
-            // Amankan pengambilan data Firestore (Hanya lakukan jika auth sudah siap) - Aturan 3
+            // Bersihkan listener lama terlebih dahulu agar tidak terjadi tabrakan kueri
+            if (unsubscribeChats) {
+                unsubscribeChats();
+                unsubscribeChats = null;
+            }
+            if (unsubscribeGallery) {
+                unsubscribeGallery();
+                unsubscribeGallery = null;
+            }
+
+            // Jalankan pengambilan data Firestore jika status Autentikasi sukses (Aturan 3)
             if (isFirebaseReady && currentAuthUser) {
                 // 1. Sinkronisasi Obrolan secara Real-time dari Cloud
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'chats'), (snapshot) => {
+                unsubscribeChats = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'chats'), (snapshot) => {
                     let messages = [];
                     snapshot.forEach(doc => {
                         messages.push({ id: doc.id, ...doc.data() });
@@ -1103,13 +1169,17 @@
                     // Urutkan berdasarkan waktu di memori lokal (Aturan 2)
                     messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                     renderMessages(messages);
+                    document.getElementById('db-warning-banner').classList.add('hidden');
                 }, (error) => {
-                    console.error("Gagal sinkronisasi chat cloud:", error);
+                    console.error("Gagal sinkronisasi chat cloud (kemungkinan Security Rules Firestore ditolak):", error);
+                    // Tampilkan banner peringatan kepada user agar tahu cara memperbaikinya di Firebase Console
+                    document.getElementById('db-warning-banner').classList.remove('hidden');
+                    updateUIConnectionStatus(false);
                     renderMessages(fallbackChats);
                 });
 
                 // 2. Sinkronisasi Galeri Tambahan dari Cloud
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'gallery'), (snapshot) => {
+                unsubscribeGallery = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'gallery'), (snapshot) => {
                     let customItems = [];
                     snapshot.forEach(doc => {
                         customItems.push({ id: doc.id, ...doc.data() });
@@ -1122,7 +1192,7 @@
                 });
 
             } else {
-                // Gunakan mode luring (offline) dengan LocalStorage jika Cloud tidak diset
+                // Gunakan mode luring (offline) dengan LocalStorage jika Cloud tidak siap
                 renderMessages(fallbackChats);
                 renderGallery(fallbackGallery.map((url, i) => ({ id: `local-${i}`, url })));
             }
@@ -1324,6 +1394,7 @@
                 btnAyyaa.className = "px-4 py-1.5 rounded-lg font-medium transition-all text-[#8e766e] hover:text-[#bd7a6b]";
             }
 
+            // Muat ulang data realtime saat mengganti POV agar visualisasi Bubble Chat langsung ter-render dengan benar
             setupDataListeners();
         }
 
