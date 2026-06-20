@@ -560,8 +560,12 @@
 
             <!-- ================= MESSAGES CHAT SECTION ================= -->
             <section id="chat-sec" class="hidden space-y-6 fade-in">
-                <div class="text-center space-y-2">
+                <!-- Header Direct Messages dengan tombol Bersihkan Obrolan -->
+                <div class="text-center space-y-2 relative">
                     <h2 class="text-2xl font-serif-aesthetic font-semibold text-[#4a3e3d]">Direct Messages</h2>
+                    <button onclick="openClearChatModal()" class="absolute right-2 top-0 text-red-400 hover:text-red-500 p-1.5 rounded-xl transition-all" title="Bersihkan Obrolan">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    </button>
                 </div>
 
                 <!-- Chat Box Container -->
@@ -659,7 +663,7 @@ service cloud.firestore {
                             <!-- Instagram Bio Layout -->
                             <div class="text-sm space-y-1 text-gray-600">
                                 <p class="font-semibold text-[#4a3e3d]">Perfect Couple</p>
-                                <p class="text-xs italic text-[#bd7a6b]">"Ada orang yang hadir sebentar lalu pergi, dan ada kamu yang datang lalu menjadi rumah."— 0 MDPL</p>
+                                <p class="text-xs italic text-[#bd7a6b]">"Ada orang yang hadir sebentar lalu pergi, and ada kamu yang datang lalu menjadi rumah."— 0 MDPL</p>
                                 <p class="flex items-center justify-center sm:justify-start gap-1 text-xs">
                                     <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Lahir ayyaa: <span class="font-medium">12 September 2008</span></p>
                                 <p class="flex items-center justify-center sm:justify-start gap-1 text-xs">
@@ -821,6 +825,27 @@ service cloud.firestore {
             </button>
         </div>
 
+        <!-- ================= MODAL KONFIRMASI HAPUS CHAT ================= -->
+        <div id="clear-chat-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6 hidden transition-all duration-300">
+            <div class="max-w-sm w-full bg-[#fcfaf7] border border-[#eaddd0] rounded-3xl p-6 shadow-xl text-center space-y-4 fade-in">
+                <div class="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto">
+                    <i data-lucide="trash-2" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-lg font-serif-aesthetic font-semibold text-[#4a3e3d]">Bersihkan Semua Chat?</h3>
+                <p class="text-xs text-gray-500 leading-relaxed font-light">
+                    Tindakan ini akan menghapus seluruh riwayat pesan secara permanen baik di HP kamu maupun HP pasanganmu.
+                </p>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="confirmClearChats()" class="flex-grow bg-red-400 hover:bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium transition-all">
+                        Ya, Hapus Semua
+                    </button>
+                    <button onclick="closeClearChatModal()" class="flex-grow bg-gray-100 hover:bg-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- ================= INSTAGRAM-STYLE FIXED BOTTOM NAVIGATION ================= -->
         <div class="fixed bottom-0 left-0 right-0 bg-[#fcfaf7] border-t border-[#ebdcd0] z-50 py-3.5 px-6 flex justify-around items-center md:max-w-4xl md:mx-auto md:rounded-t-3xl md:border-x shadow-lg">
             <!-- Home Tab Button -->
@@ -856,7 +881,7 @@ service cloud.firestore {
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ================= MANUAL FIREBASE CONFIGURATION FOR DEPLOYMENT =================
         const CUSTOM_FIREBASE_CONFIG = {
@@ -1445,6 +1470,49 @@ service cloud.firestore {
             chatInput.value = '';
         }
 
+        // Fungsi menghapus semua obrolan (Direct Messages) secara massal
+        async function clearAllChats() {
+            // 1. Bersihkan penyimpanan lokal (localStorage)
+            localStorage.removeItem('ayyaa_ikii_chat');
+            fallbackChats = [];
+
+            // 2. Bersihkan dari Firebase Firestore jika terhubung ke cloud
+            if (isFirebaseReady && currentAuthUser) {
+                try {
+                    const chatCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'chats');
+                    const qSnapshot = await getDocs(chatCollectionRef);
+                    const deletePromises = [];
+                    
+                    qSnapshot.forEach((docSnap) => {
+                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'chats', docSnap.id);
+                        deletePromises.push(deleteDoc(docRef));
+                    });
+                    
+                    await Promise.all(deletePromises);
+                    showCloudStatus("Semua pesan cloud berhasil dibersihkan!");
+                } catch (e) {
+                    console.error("Gagal menghapus pesan cloud Firestore: ", e);
+                }
+            }
+            
+            // Render ulang tampilan thread chat menjadi kosong
+            renderMessages([]);
+        }
+
+        // Fungsi-fungsi kontrol untuk Modal Hapus Chat
+        function openClearChatModal() {
+            document.getElementById('clear-chat-modal').classList.remove('hidden');
+        }
+
+        function closeClearChatModal() {
+            document.getElementById('clear-chat-modal').classList.add('hidden');
+        }
+
+        async function confirmClearChats() {
+            document.getElementById('clear-chat-modal').classList.add('hidden');
+            await clearAllChats();
+        }
+
         // Render Thread DM secara Dinamis sesuai Switch Pengirim
         function renderMessages(messagesList = []) {
             const thread = document.getElementById('chat-thread');
@@ -1576,6 +1644,9 @@ service cloud.firestore {
         window.closeCloudConfigModal = closeCloudConfigModal;
         window.saveCloudConfig = saveCloudConfig;
         window.resetCloudConfig = resetCloudConfig;
+        window.openClearChatModal = openClearChatModal;
+        window.closeClearChatModal = closeClearChatModal;
+        window.confirmClearChats = confirmClearChats;
 
     </script>
 </body>
